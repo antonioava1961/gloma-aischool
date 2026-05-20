@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - GLOMA AI SCHOOL</title>
+  <meta name="description" content="Tu panel unificado de estudio interactivo. Sin cuentas, local-first y gratuito.">
+  
+  <!-- Tipografía Premium -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Hojas de Estilo Modulares -->
+  <link rel="stylesheet" href="public/styles/main.css">
+  <link rel="stylesheet" href="public/styles/theme.css">
+  <link rel="stylesheet" href="public/styles/dashboard.css">
+  
+  <!-- CDNs Académicos (KaTeX, jsPDF, Chart.js) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Control de Temas Rápido -->
+  <script src="public/js/theme.js"></script>
+</head>
+<body class="dashboard-body">
+
+  <!-- ========================================================
+       1. SIDEBAR LATERAL (Menú de Navegación)
+       ======================================================== -->
+  <aside class="sidebar">
+    <div>
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-badge">G</div>
+        <div class="sidebar-logo-text">GLOMA SCHOOL</div>
+      </div>
+
+      <nav>
+        <div class="menu-label">Navegación</div>
+        <ul class="menu-list">
+          <li class="menu-item active" data-tab="home">
+            <button id="menu-btn-home">🏠 Inicio</button>
+          </li>
+          <li class="menu-item" data-tab="math">
+            <button id="menu-btn-math">📐 Matemáticas</button>
+          </li>
+          <li class="menu-item" data-tab="physics">
+            <button id="menu-btn-physics">🍎 Física</button>
+          </li>
+          <li class="menu-item" data-tab="chemistry">
+            <button id="menu-btn-chemistry">🧪 Química</button>
+          </li>
+          <li class="menu-item" data-tab="english">
+            <button id="menu-btn-english">🇬🇧 Inglés</button>
+          </li>
+          <li class="menu-item" data-tab="social">
+            <button id="menu-btn-social">🌎 Ciencias Sociales</button>
+          </li>
+        </ul>
+
+        <div class="menu-label">Ayuda Académica</div>
+        <ul class="menu-list">
+          <li class="menu-item" data-tab="tutor">
+            <button id="menu-btn-tutor">🧑‍🏫 Tutor Socrático</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+    <!-- Pie del Sidebar: Datos del Estudiante y Modo Claro/Oscuro -->
+    <div class="sidebar-footer">
+      <div class="student-badge">
+        <div class="student-avatar" id="sidebar-avatar">-</div>
+        <div class="student-info">
+          <span class="student-name" id="sidebar-student-name">Estudiante</span>
+          <span class="student-grade" id="sidebar-student-grade">Cargando...</span>
+        </div>
+      </div>
+      <button class="theme-toggle-btn" id="theme-toggle" onclick="toggleTheme()">☀️ Modo Claro</button>
+    </div>
+  </aside>
+
+  <!-- ========================================================
+       2. CONTENIDO PRINCIPAL (Workspace)
+       ======================================================== -->
+  <main class="workspace">
+    <!-- Cabecera superior -->
+    <header class="workspace-header">
+      <div>
+        <h1 class="greeting-title" id="greeting-user">¡Hola, Estudiante!</h1>
+        <p class="greeting-desc">Bienvenido a tu entorno interactivo de aprendizaje escolar.</p>
+      </div>
+      <!-- Botón de menú móvil -->
+      <button class="menu-toggle-btn-mobile" id="mobile-menu-open" aria-label="Abrir menú">☰</button>
+    </header>
+
+    <!-- Barra de Estadísticas Rápidas -->
+    <section class="stats-bar">
+      <div class="stat-box glass-panel" id="stat-minutes">
+        <div class="stat-icon">⏱️</div>
+        <div>
+          <div class="stat-value" id="stat-minutes-val">0m</div>
+          <div class="stat-label">Estudio Hoy</div>
+        </div>
+      </div>
+
+      <div class="stat-box glass-panel" id="stat-exercises">
+        <div class="stat-icon accent">🏆</div>
+        <div>
+          <div class="stat-value" id="stat-exercises-val">0</div>
+          <div class="stat-label">Ejercicios Hechos</div>
+        </div>
+      </div>
+
+      <div class="stat-box glass-panel" id="stat-grade">
+        <div class="stat-icon">📚</div>
+        <div>
+          <div class="stat-value" id="banner-student-grade">-</div>
+          <div class="stat-label">Nivel de Estudio</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================
+         VISTAS DINÁMICAS (Pestañas SPA)
+         ======================================================== -->
+
+    <!-- Pestaña 1: Inicio (Home) -->
+    <section class="workspace-section subject-panel" id="section-home">
+      <div class="panel-header">
+        <h2 class="panel-title">Tu Panel de Estudio Inteligente</h2>
+      </div>
+      
+      <div class="glass-panel" style="padding: 2.5rem; position: relative; overflow: hidden; background: radial-gradient(circle at top right, var(--primary-glow), transparent 60%), var(--bg-card);">
+        <h3 style="font-size: 1.6rem; margin-bottom: 0.75rem; font-family: var(--font-title);">¡Organiza tu estudio de forma libre!</h3>
+        <p style="color: var(--text-secondary); max-width: 700px; margin-bottom: 1.5rem;">
+          Esta aplicación funciona bajo una filosofía **Local-First**: toda la información, tu progreso de estudio y tus puntuaciones se guardan de forma privada y directa en tu navegador web. No recopilamos datos personales ni contraseñas.
+        </p>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+          <button class="btn" style="padding: 0.6rem 1.5rem; font-size: 0.9rem;" onclick="document.getElementById('menu-btn-tutor').click()">Preguntar al Tutor IA</button>
+          <button class="btn" style="background: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary) !important; padding: 0.6rem 1.5rem; font-size: 0.9rem;" onclick="document.getElementById('menu-btn-math').click()">Iniciar Matemáticas</button>
+        </div>
+      </div>
+
+      <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-top: 1rem;">
+        <div class="glass-panel" style="padding: 2rem;">
+          <h4 style="font-size: 1.15rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">🛡️ Privacidad Absoluta</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Tus datos de progreso e historial no se transmiten a ningún servidor externo. Solo se guardan localmente en tu localStorage.</p>
+        </div>
+        <div class="glass-panel" style="padding: 2rem;">
+          <h4 style="font-size: 1.15rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">💡 Inteligencia de Gemini</h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary);">Las explicaciones y problemas son generados por Gemini 1.5 Flash, garantizando explicaciones pedagógicas de alta precisión.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña 2: Matemáticas -->
+    <section class="workspace-section subject-panel hidden" id="section-math">
+      <div class="panel-header">
+        <h2 class="panel-title">📐 Matemáticas Inteligentes</h2>
+        <button class="btn" id="btn-math-generate" style="padding: 0.6rem 1.2rem;">Generar Nuevo Ejercicio</button>
+      </div>
+      
+      <div class="glass-panel" id="math-welcome-panel" style="padding: 3rem; text-align: center;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">📐</div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-family: var(--font-title);">¿Listo para resolver problemas matemáticos?</h3>
+        <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem auto;">
+          Generaremos un ejercicio único y adaptado a tu nivel escolar. Utiliza el editor matemático y valida tus respuestas.
+        </p>
+        <button class="btn" onclick="document.getElementById('btn-math-generate').click()">Empezar Ahora</button>
+      </div>
+
+      <!-- Panel de Carga (Loader Skeleton) -->
+      <div class="glass-panel hidden" id="math-loader-panel" style="padding: 4rem; text-align: center;">
+        <div class="spinner" style="border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 1.5rem auto;"></div>
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; font-family: var(--font-title);">Generando problema con Inteligencia Artificial...</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">El modelo Gemini 1.5 Flash está diseñando un reto a tu medida.</p>
+      </div>
+
+      <!-- Panel del Problema Activo -->
+      <div class="glass-panel hidden" id="math-active-panel" style="padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+          <span style="font-weight: 700; color: var(--primary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; background: var(--primary-glow); padding: 0.25rem 0.75rem; border-radius: var(--radius-full);" id="math-difficulty-tag">Dificultad: Media</span>
+          <span style="font-size: 0.85rem; color: var(--text-muted); font-weight: bold;" id="math-grade-tag">Grado</span>
+        </div>
+
+        <div>
+          <h4 style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 600;">Enunciado del problema:</h4>
+          <div id="math-problem-text" style="font-size: 1.3rem; padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color); line-height: 1.8; color: var(--text-title); overflow-x: auto;">
+            <!-- Aquí se renderiza KaTeX -->
+          </div>
+        </div>
+
+        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; align-items: flex-end;">
+          <div style="flex: 1; min-width: 250px;">
+            <label class="form-label" for="math-input-answer" style="margin-bottom: 0.5rem; font-weight: 700;">Ingresa tu Respuesta</label>
+            <input type="text" class="form-input" id="math-input-answer" placeholder="Ej. x = 5 o un valor numérico..." style="padding: 0.85rem 1rem;">
+          </div>
+          <button class="btn" id="btn-math-verify" style="padding: 0.85rem 2rem; background: var(--accent); box-shadow: 0 4px 12px var(--accent-glow);">Verificar Respuesta</button>
+        </div>
+
+        <!-- Alerta de Retroalimentación -->
+        <div class="hidden" id="math-feedback-alert" style="padding: 1.25rem; border-radius: var(--radius-md); font-weight: 600; display: flex; align-items: center; gap: 0.75rem;">
+        </div>
+
+        <!-- Panel de Solución Paso a Paso -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+          <button class="btn" id="btn-math-reveal-sol" style="background: transparent; border: 1px solid var(--border-color); color: var(--text-primary) !important; align-self: flex-start; padding: 0.6rem 1.2rem; font-size: 0.85rem;">Mostrar Explicación Detallada</button>
+          <div class="hidden" id="math-solution-panel" style="padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color); line-height: 1.8; overflow-x: auto;">
+            <!-- Aquí se renderiza KaTeX -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña 3: Física -->
+    <section class="workspace-section subject-panel hidden" id="section-physics">
+      <div class="panel-header">
+        <h2 class="panel-title">🍎 Física Desglosada</h2>
+        <button class="btn" id="btn-physics-generate" style="padding: 0.6rem 1.2rem;">Generar Nuevo Problema</button>
+      </div>
+
+      <div class="glass-panel" id="physics-welcome-panel" style="padding: 3rem; text-align: center;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🍎</div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-family: var(--font-title);">Física en 4 Pasos Didácticos</h3>
+        <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem auto;">
+          Los problemas de física se resuelven de forma lógica. Aprende desglosando la solución en Datos, Fórmula, Sustitución y Resultado.
+        </p>
+        <button class="btn" onclick="document.getElementById('btn-physics-generate').click()">Empezar Ahora</button>
+      </div>
+
+      <!-- Loader -->
+      <div class="glass-panel hidden" id="physics-loader-panel" style="padding: 4rem; text-align: center;">
+        <div class="spinner" style="border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 1.5rem auto;"></div>
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; font-family: var(--font-title);">Diseñando experimento de física...</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">El modelo Gemini 1.5 Flash está adaptando las leyes físicas a tu nivel.</p>
+      </div>
+
+      <!-- Panel Activo -->
+      <div class="glass-panel hidden" id="physics-active-panel" style="padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem;">
+        <div>
+          <h4 style="font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 1rem; font-weight: 600;">Enunciado del problema físico:</h4>
+          <div id="physics-problem-text" style="font-size: 1.25rem; padding: 1.5rem; background: var(--bg-secondary); border-radius: var(--radius-md); border: 1px solid var(--border-color); line-height: 1.8; color: var(--text-title); overflow-x: auto;">
+          </div>
+        </div>
+
+        <!-- Tarjetas de 4 Pasos -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-top: 0.5rem;">
+          <!-- Datos -->
+          <div class="glass-panel physics-step-card" id="card-phys-datos" style="padding: 1.5rem; border-top: 4px solid var(--primary); cursor: pointer; transition: all var(--transition-fast);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <span style="font-weight: 700; color: var(--primary); font-size: 0.8rem; text-transform: uppercase;">Paso 1</span>
+              <span style="font-size: 1.25rem;">📊</span>
+            </div>
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Datos</h4>
+            <div class="physics-step-content hidden" id="content-phys-datos" style="font-size: 0.95rem; color: var(--text-primary); white-space: pre-line; background: var(--bg-primary); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); overflow-x: auto;">
+            </div>
+            <div class="physics-step-placeholder" id="placeholder-phys-datos" style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">Haz clic para revelar</div>
+          </div>
+
+          <!-- Fórmula -->
+          <div class="glass-panel physics-step-card" id="card-phys-formula" style="padding: 1.5rem; border-top: 4px solid var(--primary); cursor: pointer; transition: all var(--transition-fast);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <span style="font-weight: 700; color: var(--primary); font-size: 0.8rem; text-transform: uppercase;">Paso 2</span>
+              <span style="font-size: 1.25rem;">📐</span>
+            </div>
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Fórmula</h4>
+            <div class="physics-step-content hidden" id="content-phys-formula" style="font-size: 0.95rem; color: var(--text-primary); background: var(--bg-primary); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); overflow-x: auto;">
+            </div>
+            <div class="physics-step-placeholder" id="placeholder-phys-formula" style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">Haz clic para revelar</div>
+          </div>
+
+          <!-- Sustitución -->
+          <div class="glass-panel physics-step-card" id="card-phys-sustitucion" style="padding: 1.5rem; border-top: 4px solid var(--primary); cursor: pointer; transition: all var(--transition-fast);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <span style="font-weight: 700; color: var(--primary); font-size: 0.8rem; text-transform: uppercase;">Paso 3</span>
+              <span style="font-size: 1.25rem;">✍️</span>
+            </div>
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Sustitución</h4>
+            <div class="physics-step-content hidden" id="content-phys-sustitucion" style="font-size: 0.95rem; color: var(--text-primary); background: var(--bg-primary); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); overflow-x: auto;">
+            </div>
+            <div class="physics-step-placeholder" id="placeholder-phys-sustitucion" style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">Haz clic para revelar</div>
+          </div>
+
+          <!-- Resultado -->
+          <div class="glass-panel physics-step-card" id="card-phys-resultado" style="padding: 1.5rem; border-top: 4px solid var(--accent); cursor: pointer; transition: all var(--transition-fast);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <span style="font-weight: 700; color: var(--accent); font-size: 0.8rem; text-transform: uppercase;">Paso 4</span>
+              <span style="font-size: 1.25rem;">🏆</span>
+            </div>
+            <h4 style="font-size: 1.1rem; margin-bottom: 0.5rem;">Resultado</h4>
+            <div class="physics-step-content hidden" id="content-phys-resultado" style="font-size: 0.95rem; color: var(--text-title); font-weight: bold; background: var(--accent-glow); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--accent); overflow-x: auto;">
+            </div>
+            <div class="physics-step-placeholder" id="placeholder-phys-resultado" style="font-size: 0.85rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">Haz clic para revelar</div>
+          </div>
+        </div>
+
+        <!-- Explicación Didáctica -->
+        <div class="glass-panel" style="padding: 1.5rem; background: var(--bg-secondary); border-left: 4px solid var(--primary); margin-top: 1rem;">
+          <h4 style="font-size: 1.05rem; margin-bottom: 0.5rem; font-family: var(--font-title); display: flex; align-items: center; gap: 0.5rem;">💡 Fundamento Teórico</h4>
+          <p id="physics-explanation" style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña 4: Química -->
+    <section class="workspace-section subject-panel hidden" id="section-chemistry">
+      <div class="panel-header">
+        <h2 class="panel-title">🧪 Química Interactiva</h2>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; align-items: start;">
+        <!-- Columna 1: Tabla Periódica e Balanceador -->
+        <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+          <div class="glass-panel" style="padding: 1.5rem;">
+            <h3 style="font-size: 1.15rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-title);">📊 Tabla Periódica Interactiva (CSS Grid)</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+              Haz clic en cualquier elemento para abrir su ficha técnica con detalles atómicos instantáneos.
+            </p>
+            <!-- Grid de la Tabla Periódica -->
+            <div id="periodic-table-grid" style="display: grid; grid-template-columns: repeat(18, 1fr); gap: 4px; overflow-x: auto; padding: 0.5rem 0;">
+              <!-- Inyectado dinámicamente -->
+            </div>
+          </div>
+
+          <!-- Balanceador -->
+          <div class="glass-panel" style="padding: 1.75rem;">
+            <h3 style="font-size: 1.15rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-title);">⚖️ Asistente de Balanceo Químico</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+              Ingresa una ecuación química desbalanceada y la IA la balanceará por ti por el método de tanteo.
+            </p>
+            <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end; margin-bottom: 1rem;">
+              <div style="flex: 1; min-width: 250px;">
+                <label class="form-label" for="chem-equation-input" style="font-weight: 700; margin-bottom: 0.5rem;">Ecuación Química</label>
+                <input type="text" class="form-input" id="chem-equation-input" placeholder="Ej. C3H8 + O2 = CO2 + H2O o H2 + O2 = H2O" style="padding: 0.8rem 1rem;">
+              </div>
+              <button class="btn" id="btn-chem-balance" style="padding: 0.8rem 1.5rem; background: var(--primary);">Balancear Reacción</button>
+            </div>
+
+            <!-- Loader Balanceador -->
+            <div class="hidden" id="chem-balance-loader" style="padding: 2rem; text-align: center;">
+              <div class="spinner" style="border: 3px solid var(--border-color); border-top: 3px solid var(--primary); border-radius: 50%; width: 35px; height: 35px; animation: spin 1s linear infinite; margin: 0 auto 1rem auto;"></div>
+              <p style="font-size: 0.85rem; color: var(--text-secondary);">Balanceando átomos en reactivos y productos...</p>
+            </div>
+
+            <!-- Resultados Balanceador -->
+            <div class="hidden" id="chem-balance-results" style="display: flex; flex-direction: column; gap: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem; margin-top: 1.25rem;">
+              <div>
+                <h4 style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Reacción Balanceada:</h4>
+                <div id="chem-balanced-text" style="font-size: 1.3rem; padding: 1rem; background: var(--accent-glow); border: 1px solid var(--accent); border-radius: var(--radius-md); text-align: center; color: var(--text-title); overflow-x: auto;">
+                </div>
+              </div>
+
+              <div>
+                <h4 style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Procedimiento Paso a Paso:</h4>
+                <div id="chem-balance-steps" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                </div>
+              </div>
+
+              <div class="glass-panel" style="padding: 1rem; background: var(--bg-secondary); font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; border-left: 3px solid var(--primary);" id="chem-balance-law">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna 2: Ficha Técnica -->
+        <div class="glass-panel" style="padding: 1.75rem; position: sticky; top: 1.5rem;" id="chemistry-info-card">
+          <h3 style="font-size: 1.20rem; margin-bottom: 1.5rem; text-align: center; font-family: var(--font-title);">Ficha de Elemento</h3>
+          <!-- Ficha Vacía -->
+          <div id="chem-card-empty" style="text-align: center; padding: 3rem 0; color: var(--text-muted);">
+            <div style="font-size: 3rem; margin-bottom: 1rem; opacity: 0.5;">🔍</div>
+            <p style="font-size: 0.9rem;">Haz clic en un elemento químico de la tabla para ver su ficha informativa completa.</p>
+          </div>
+          <!-- Ficha Llena -->
+          <div class="hidden" id="chem-card-full" style="display: flex; flex-direction: column; gap: 1.5rem;">
+            <div style="display: flex; justify-content: center;">
+              <div id="chem-card-visual" style="width: 100px; height: 100px; border-radius: var(--radius-md); display: flex; flex-direction: column; justify-content: space-between; padding: 0.75rem; color: #fff; font-weight: bold; position: relative;">
+                <span id="chem-card-number" style="font-size: 0.85rem;"></span>
+                <span id="chem-card-symbol" style="font-size: 2.2rem; text-align: center; line-height: 1; margin-top: -0.25rem;"></span>
+                <span id="chem-card-mass" style="font-size: 0.75rem; text-align: center;"></span>
+              </div>
+            </div>
+            <div style="text-align: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+              <h4 id="chem-card-name" style="font-size: 1.4rem; color: var(--text-title); font-family: var(--font-title);"></h4>
+              <span id="chem-card-category" style="font-size: 0.75rem; text-transform: uppercase; background: var(--border-color); padding: 0.2rem 0.6rem; border-radius: var(--radius-full); font-weight: bold; color: var(--text-secondary); display: inline-block; margin-top: 0.5rem;"></span>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.85rem;">
+              <div>
+                <span style="color: var(--text-muted); display: block;">Grupo</span>
+                <strong id="chem-card-group" style="color: var(--text-title);"></strong>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); display: block;">Período</span>
+                <strong id="chem-card-period" style="color: var(--text-title);"></strong>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); display: block;">Estado (CN)</span>
+                <strong id="chem-card-state" style="color: var(--text-title);"></strong>
+              </div>
+              <div>
+                <span style="color: var(--text-muted); display: block;">Config. Elec.</span>
+                <strong id="chem-card-config" style="color: var(--text-title); word-break: break-all;"></strong>
+              </div>
+            </div>
+            <p id="chem-card-desc" style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5; border-top: 1px solid var(--border-color); padding-top: 1rem;"></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña 5: Inglés -->
+    <section class="workspace-section subject-panel hidden" id="section-english">
+      <div class="panel-header">
+        <h2 class="panel-title">🇬🇧 Módulo de Inglés</h2>
+        <div style="display: flex; gap: 0.75rem;">
+          <select class="form-select" id="english-difficulty-select" style="padding: 0.5rem 1rem; width: auto; font-size: 0.85rem;">
+            <option value="Básico" selected>Nivel Básico (A1/A2)</option>
+            <option value="Intermedio">Nivel Intermedio (B1/B2)</option>
+            <option value="Avanzado">Nivel Avanzado (C1)</option>
+          </select>
+          <button class="btn" id="btn-english-start" style="padding: 0.5rem 1.2rem; font-size: 0.85rem;">Empezar Quiz</button>
+        </div>
+      </div>
+
+      <div class="glass-panel" id="english-welcome-panel" style="padding: 3rem; text-align: center;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🇬🇧</div>
+        <h3 style="font-size: 1.5rem; margin-bottom: 0.75rem; font-family: var(--font-title);">Quizzes Adaptativos & Pronunciación</h3>
+        <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 1.5rem auto;">
+          Mejora tu vocabulario y gramática resolviendo cuestionarios adaptados y escuchando la pronunciación nativa interactiva.
+        </p>
+        <button class="btn" onclick="document.getElementById('btn-english-start').click()">Iniciar Quiz de 5 Preguntas</button>
+      </div>
+
+      <!-- Loader -->
+      <div class="glass-panel hidden" id="english-loader-panel" style="padding: 4rem; text-align: center;">
+        <div class="spinner" style="border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 1.5rem auto;"></div>
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; font-family: var(--font-title);">Construyendo cuestionario de inglés...</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">El modelo Gemini 1.5 Flash está adaptando las preguntas a tu nivel.</p>
+      </div>
+
+      <!-- Panel de Quiz Activo -->
+      <div class="glass-panel hidden" id="english-active-panel" style="padding: 2.5rem; display: flex; flex-direction: column; gap: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 1rem;">
+          <span style="font-weight: 700; color: var(--primary); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; background: var(--primary-glow); padding: 0.25rem 0.75rem; border-radius: var(--radius-full);" id="english-difficulty-tag">Dificultad</span>
+          <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: bold;" id="english-score-tag">Pregunta 1 de 5</span>
+        </div>
+
+        <div>
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+            <h4 style="font-size: 1.25rem; color: var(--text-title); font-weight: 700; margin: 0; font-family: var(--font-title);" id="english-question-text"></h4>
+            <button class="btn" id="btn-english-speak" style="padding: 0.4rem 0.8rem; font-size: 0.8rem; background: var(--primary-glow); color: var(--primary) !important; border: 1px solid var(--border-color);" title="Escuchar pronunciación">🔊 Escuchar</button>
+          </div>
+          <p id="english-question-translation" style="font-size: 0.9rem; color: var(--text-secondary); font-style: italic; margin-bottom: 1.5rem;"></p>
+
+          <!-- Contenedor de Opciones -->
+          <div id="english-options-container" style="display: grid; grid-template-columns: 1fr; gap: 0.75rem;">
+            <!-- Inyectado dinámicamente -->
+          </div>
+        </div>
+
+        <!-- Retroalimentación de la Pregunta -->
+        <div class="glass-panel hidden" id="english-feedback-panel" style="padding: 1.25rem; background: var(--bg-secondary); border-left: 4px solid var(--primary);">
+          <h4 style="font-size: 0.95rem; margin-bottom: 0.25rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-title);" id="english-feedback-title"></h4>
+          <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;" id="english-feedback-desc"></p>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; border-top: 1px solid var(--border-color); padding-top: 1.5rem;">
+          <button class="btn" id="btn-english-next" style="padding: 0.75rem 2rem;">Siguiente Pregunta ➡️</button>
+        </div>
+      </div>
+
+      <!-- Panel de Resultados del Quiz -->
+      <div class="glass-panel hidden" id="english-results-panel" style="padding: 3rem; text-align: center;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;" id="english-results-icon">🎉</div>
+        <h3 style="font-size: 1.75rem; margin-bottom: 0.5rem; font-family: var(--font-title);" id="english-results-title">¡Cuestionario Completado!</h3>
+        <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 2rem auto;" id="english-results-desc">
+        </p>
+        <div style="display: flex; justify-content: center; gap: 1rem;">
+          <button class="btn" onclick="document.getElementById('btn-english-start').click()">Tomar Otro Quiz</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña 6: Ciencias Sociales -->
+    <section class="workspace-section subject-panel hidden" id="section-social">
+      <div class="panel-header">
+        <h2 class="panel-title">🌎 Ciencias Sociales e Historia</h2>
+      </div>
+
+      <div class="glass-panel" style="padding: 2rem;">
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-title);">🌎 Creador de Líneas de Tiempo Históricas</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Ingresa cualquier acontecimiento, personaje o época histórica (ej: "Revolución Industrial", "Imperio Romano", "Descubrimiento de América") y Gemini estructurará un resumen didáctico con su línea de tiempo cronológica correspondiente.
+        </p>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-end;">
+          <div style="flex: 1; min-width: 250px;">
+            <label class="form-label" for="social-topic-input" style="font-weight: 700; margin-bottom: 0.5rem;">Tema Histórico</label>
+            <input type="text" class="form-input" id="social-topic-input" placeholder="Ej. Segunda Guerra Mundial o Independencia de México" style="padding: 0.8rem 1rem;">
+          </div>
+          <button class="btn" id="btn-social-generate" style="padding: 0.8rem 2rem; background: var(--primary);">Generar Línea de Tiempo</button>
+        </div>
+      </div>
+
+      <!-- Loader -->
+      <div class="glass-panel hidden" id="social-loader-panel" style="padding: 4rem; text-align: center;">
+        <div class="spinner" style="border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 1.5rem auto;"></div>
+        <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem; font-family: var(--font-title);">Viajando en el tiempo con Gemini IA...</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Investigando hechos, fechas y causas del evento histórico.</p>
+      </div>
+
+      <!-- Panel Activo de Resultados -->
+      <div class="hidden" id="social-active-panel" style="display: flex; flex-direction: column; gap: 2rem;">
+        <div class="glass-panel" style="padding: 2rem;">
+          <h3 id="social-active-title" style="font-size: 1.5rem; margin-bottom: 0.75rem; color: var(--text-title); font-family: var(--font-title);"></h3>
+          <p id="social-active-summary" style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.7;"></p>
+        </div>
+
+        <div class="glass-panel" style="padding: 2rem 2.5rem; position: relative;">
+          <h3 style="font-size: 1.25rem; margin-bottom: 2.5rem; text-align: center; font-family: var(--font-title);">📅 Acontecimientos Clave</h3>
+          
+          <!-- Línea de tiempo vertical -->
+          <div id="social-timeline-container" style="position: relative; max-width: 800px; margin: 0 auto; padding-left: 2rem;">
+            <!-- Línea vertical decorativa de fondo -->
+            <div style="position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: var(--border-color);"></div>
+            
+            <!-- Nodos inyectados dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pestaña 7: Tutor Socrático -->
+    <section class="workspace-section subject-panel hidden" id="section-tutor">
+      <div class="panel-header">
+        <h2 class="panel-title">Tutor Académico IA (Método Socrático)</h2>
+      </div>
+      
+      <div class="glass-panel chat-container" id="tutor-chat-widget">
+        <!-- Historial de mensajes -->
+        <div class="chat-messages" id="tutor-chat-messages">
+          <div class="chat-bubble tutor">
+            👋 ¡Hola! Soy tu tutor escolar de **GLOMA AI SCHOOL**. 
+            <br><br>
+            Cuéntame, ¿qué concepto, fórmula o duda académica te gustaría que analicemos hoy? 
+            <br>
+            Recuerda que mi meta es **enseñarte a pensar**, por lo que te haré preguntas de razonamiento para guiarte en lugar de darte la solución de inmediato. ¡Dime qué estás repasando! 📚
+          </div>
+        </div>
+
+        <!-- Barra inferior de entrada -->
+        <div class="chat-input-bar">
+          <input type="text" class="form-input" id="tutor-chat-input" placeholder="Pregúntale algo sobre Matemáticas, Ciencias o Historia..." onkeydown="if(event.key === 'Enter') alert('¡Excelente pregunta! En la Fase 4 integraremos el chat dinámico con tu servidor seguro.')">
+          <button class="btn" style="padding: 0 1.5rem;" onclick="alert('¡Excelente pregunta! En la Fase 4 integraremos el chat dinámico con tu servidor seguro.')">Enviar</button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================================
+       3. MODAL DE ONBOARDING (Perfil Estudiantil Local-First)
+       ======================================================== -->
+  <div class="modal-overlay hidden" id="onboarding-modal">
+    <div class="modal-content">
+      <div class="modal-logo">G</div>
+      <h2 class="modal-title">¡Bienvenido a la Escuela!</h2>
+      <p class="modal-desc">
+        Configura tu perfil escolar en un segundo. Todo tu progreso se guardará localmente en este navegador.
+      </p>
+
+      <form onsubmit="saveStudentProfile(event)">
+        <div class="form-group">
+          <label class="form-label" for="input-student-name">Nombre del Alumno</label>
+          <input type="text" class="form-input" id="input-student-name" placeholder="Ej. Gerardo" required minlength="2">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="select-student-grade">Año Escolar (Secundaria)</label>
+          <select class="form-select" id="select-student-grade" required>
+            <option value="" disabled selected>Selecciona tu año...</option>
+            <option value="1.°">1.° de Secundaria (12-13 años)</option>
+            <option value="2.°">2.° de Secundaria (13-14 años)</option>
+            <option value="3.°">3.° de Secundaria (14-15 años)</option>
+            <option value="4.°">4.° de Secundaria (15-16 años)</option>
+            <option value="5.°">5.° de Secundaria (16-17 años)</option>
+          </select>
+        </div>
+
+        <button type="submit" class="modal-btn">Comenzar a Estudiar</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Módulos Académicos -->
+  <script src="public/js/modules/math.js"></script>
+  <script src="public/js/modules/physics.js"></script>
+  <script src="public/js/modules/chemistry.js"></script>
+  <script src="public/js/modules/english.js"></script>
+  <script src="public/js/modules/social.js"></script>
+
+  <!-- Scripts del Dashboard -->
+  <script src="public/js/dashboard.js"></script>
+</body>
+</html>
