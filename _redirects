@@ -1,7 +1,7 @@
 # Redirección mágica para conectar Netlify con el backend en Render
 # Reemplaza 'https://TU-BACKEND-DE-RENDER.onrender.com' con la URL real que te dé Render al desplegar el backend.
 
-/api/*  https://TU-BACKEND-DE-RENDER.onrender.com/api/:splat  200!
+/api/*  https://gloma-aischool-backend.onrender.com/api/:splat  200!
 
 # Redirección comodín para asegurar que las rutas del frontend (SPA) carguen correctamente index.html
 /*      /index.html  200
